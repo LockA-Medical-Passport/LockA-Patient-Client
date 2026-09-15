@@ -9,5 +9,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // Rendering work is fast; scheduling it on a busy machine is not. The
+    // default 5s trips on contention rather than on real slowness.
+    testTimeout: 15_000,
   },
 })

@@ -4,6 +4,8 @@ import { MemoryRouter } from 'react-router-dom'
 import * as freighterApi from '@stellar/freighter-api'
 import { AppRoutes } from './routes'
 import { AppProviders } from './app/providers'
+import { createMockClient } from './lib/soroban'
+import type { LockaContractClient } from './lib/soroban'
 
 vi.mock('@stellar/freighter-api', () => ({
   isConnected: vi.fn(),
@@ -38,9 +40,10 @@ beforeEach(() => {
   vi.mocked(freighterApi.isConnected).mockResolvedValue({ isConnected: false })
 })
 
-function renderRoutes(path: string) {
+/** Routing only — the seeded mock client keeps every route off the network. */
+function renderRoutes(path: string, client: LockaContractClient = createMockClient({ latencyMs: 0 })) {
   return render(
-    <AppProviders>
+    <AppProviders contractClient={client}>
       <MemoryRouter initialEntries={[path]}>
         <AppRoutes />
       </MemoryRouter>
@@ -89,7 +92,6 @@ describe('AppRoutes', () => {
   })
 
   it.each([
-    ['/passport', 'Patient Passport'],
     ['/records', 'Medical Records'],
     ['/consent', 'Consent Management'],
   ])('renders %s once a wallet is connected', async (path, heading) => {
@@ -97,6 +99,16 @@ describe('AppRoutes', () => {
     renderRoutes(path)
 
     expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /connect your wallet/i })).not.toBeInTheDocument()
+  })
+
+  it('hands /passport to the passport flow once a wallet is connected', async () => {
+    mockConnectedWallet()
+    renderRoutes('/passport')
+
+    // Registration, redirects, and the passport view are covered end to end in
+    // pages/passportFlow.test.tsx; here it only has to reach the flow at all.
+    expect(await screen.findByRole('heading', { name: /amara okafor/i })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /connect your wallet/i })).not.toBeInTheDocument()
   })
 })

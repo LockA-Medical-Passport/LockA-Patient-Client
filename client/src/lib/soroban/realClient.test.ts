@@ -98,6 +98,7 @@ describe('createRealClient — decoding', () => {
     vi.mocked(readContract).mockResolvedValue({
       id: 'passport-1',
       owner: PATIENT,
+      identity_commitment: 'a'.repeat(64),
       display_name: 'Amara Okafor',
       registered_at: 1_772_615_520n,
       status: 'active',
@@ -107,6 +108,7 @@ describe('createRealClient — decoding', () => {
     await expect(client().getPassport(PATIENT)).resolves.toEqual({
       id: 'passport-1',
       owner: PATIENT,
+      identityCommitment: 'a'.repeat(64),
       displayName: 'Amara Okafor',
       registeredAt: '2026-03-04T09:12:00.000Z',
       status: 'active',
@@ -158,8 +160,10 @@ describe('createRealClient — decoding', () => {
     vi.mocked(readContract).mockResolvedValue({ id: 'passport-1', owner: PATIENT, display_name: 'Amara Okafor' })
 
     await expect(
-      client().registerPassport({ owner: PATIENT, displayName: 'Amara Okafor' }),
+      client().registerPassport({ owner: PATIENT, identityCommitment: 'AB'.repeat(32) }),
     ).resolves.toMatchObject({ id: 'passport-1', displayName: 'Amara Okafor' })
+    // The commitment goes on-chain lower-cased, so the same identity always hashes alike.
+    expect(lastArgs(invokeContract)).toEqual([PATIENT, 'ab'.repeat(32), null, null])
     expect(readContract).toHaveBeenCalledWith(
       expect.objectContaining({ contractId: 'C_PATIENT', method: 'get_passport' }),
     )

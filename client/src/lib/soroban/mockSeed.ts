@@ -54,6 +54,7 @@ export const MOCK_PROVIDERS: Record<string, Provider> = {
 const MOCK_PASSPORT: Passport = {
   id: 'passport-7f3a91',
   owner: MOCK_PATIENT_ADDRESS,
+  identityCommitment: '51d0b0df0dfd814e68a3b87ccee4c0ca232e7e58cb7078fab676d2a3cbfa9b6e',
   displayName: 'Amara Okafor',
   registeredAt: '2026-03-04T09:12:00.000Z',
   status: 'active',

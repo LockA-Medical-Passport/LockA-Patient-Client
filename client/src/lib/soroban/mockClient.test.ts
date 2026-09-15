@@ -71,6 +71,7 @@ describe('createMockClient — seed data', () => {
     await expect(mock().getPassport(MOCK_PATIENT_ADDRESS)).resolves.toEqual({
       id: 'passport-7f3a91',
       owner: MOCK_PATIENT_ADDRESS,
+      identityCommitment: '51d0b0df0dfd814e68a3b87ccee4c0ca232e7e58cb7078fab676d2a3cbfa9b6e',
       displayName: 'Amara Okafor',
       registeredAt: '2026-03-04T09:12:00.000Z',
       status: 'active',
@@ -234,13 +235,15 @@ describe('createMockClient — writes', () => {
 
     const passport = await client.registerPassport({
       owner: MOCK_PATIENT_ADDRESS,
-      displayName: 'New Patient',
+      identityCommitment: 'A'.repeat(64),
       recoveryAddress: null,
     })
 
     expect(passport).toMatchObject({
       owner: MOCK_PATIENT_ADDRESS,
-      displayName: 'New Patient',
+      // Commitments are normalised to lower case, whichever way they were typed.
+      identityCommitment: 'a'.repeat(64),
+      displayName: null,
       status: 'active',
       registeredAt: FIXED_NOW.toISOString(),
     })
@@ -285,8 +288,14 @@ describe('createMockClient — failure modes', () => {
 
   it('rejects registering a second passport', async () => {
     await expect(
-      mock().registerPassport({ owner: MOCK_PATIENT_ADDRESS, displayName: 'Duplicate' }),
+      mock().registerPassport({ owner: MOCK_PATIENT_ADDRESS, identityCommitment: 'a'.repeat(64) }),
     ).rejects.toThrow(/already registered/i)
+  })
+
+  it('rejects an identity commitment that is not 32 hex-encoded bytes', async () => {
+    await expect(
+      mock({ unregistered: true }).registerPassport({ owner: MOCK_PATIENT_ADDRESS, identityCommitment: 'nope' }),
+    ).rejects.toThrow(/32 hex-encoded bytes/i)
   })
 })
 

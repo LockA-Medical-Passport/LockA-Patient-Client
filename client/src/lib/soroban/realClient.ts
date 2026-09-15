@@ -211,7 +211,8 @@ function toPassport(value: unknown): Passport | null {
   return {
     id: text(pick(raw, 'id', 'passport_id', 'passportId')),
     owner: text(pick(raw, 'owner', 'patient', 'address')),
-    displayName: text(pick(raw, 'display_name', 'displayName', 'name')),
+    identityCommitment: text(pick(raw, 'identity_commitment', 'identityCommitment', 'commitment')),
+    displayName: optionalText(pick(raw, 'display_name', 'displayName', 'name')),
     registeredAt: timestamp(pick(raw, 'registered_at', 'registeredAt', 'created_at')),
     // An unrecognised status is treated as suspended — never as more access than we can confirm.
     status: oneOf(pick(raw, 'status'), PASSPORT_STATUSES, 'suspended'),
@@ -317,11 +318,21 @@ export function createRealClient(): LockaContractClient {
     listAccessRequests,
     listConsentGrants,
 
-    async registerPassport({ owner, displayName, recoveryAddress = null }: RegisterPassportInput): Promise<Passport> {
+    async registerPassport({
+      owner,
+      identityCommitment,
+      recoveryAddress = null,
+      displayName = null,
+    }: RegisterPassportInput): Promise<Passport> {
       const raw = await invokeContract({
         contractId: identityRegistry(),
         method: METHODS.registerPassport,
-        args: [addressArg(owner), stringArg(displayName), optionalStringArg(recoveryAddress)],
+        args: [
+          addressArg(owner),
+          stringArg(identityCommitment.toLowerCase()),
+          optionalStringArg(recoveryAddress),
+          optionalStringArg(displayName),
+        ],
       })
       // Contracts that return void still wrote the passport — read it back.
       const passport = toPassport(raw) ?? (await getPassport(owner))

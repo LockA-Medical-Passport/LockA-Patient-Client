@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ToastProvider } from './ToastProvider'
 import { useToast } from './useToast'
@@ -70,16 +70,25 @@ describe('ToastProvider / useToast', () => {
   })
 
   it('auto-dismisses after its configured duration', async () => {
-    const user = userEvent.setup()
-    render(
-      <ToastProvider>
-        <TestHarness />
-      </ToastProvider>,
-    )
-    await user.click(screen.getByText('fire quick'))
-    expect(screen.getByText('Quick')).toBeInTheDocument()
+    // Fake timers: on a busy machine the click alone can outlast a 30ms toast,
+    // which used to make this race rather than test the dismissal.
+    vi.useFakeTimers()
+    try {
+      render(
+        <ToastProvider>
+          <TestHarness />
+        </ToastProvider>,
+      )
+      // fireEvent, not userEvent: userEvent's own async waits do not mix with
+      // fake timers here, and this test only needs one plain click.
+      fireEvent.click(screen.getByText('fire quick'))
+      expect(screen.getByText('Quick')).toBeInTheDocument()
 
-    await waitFor(() => expect(screen.queryByText('Quick')).not.toBeInTheDocument())
+      await act(() => vi.advanceTimersByTimeAsync(30))
+      expect(screen.queryByText('Quick')).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('throws a clear error when used outside a ToastProvider', () => {

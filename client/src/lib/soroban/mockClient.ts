@@ -114,17 +114,23 @@ export function createMockClient(options: MockClientOptions = {}): LockaContract
       return call(() => (state.passport ? clone({ ...state.passport, owner }) : null))
     },
 
-    registerPassport({ owner, displayName, recoveryAddress = null }: RegisterPassportInput): Promise<Passport> {
+    registerPassport({
+      owner,
+      identityCommitment,
+      recoveryAddress = null,
+      displayName = null,
+    }: RegisterPassportInput): Promise<Passport> {
       return call(() => {
         if (state.passport) {
           throw new SorobanError('contract', 'A passport is already registered for this account.')
         }
-        if (!displayName.trim()) {
-          throw new SorobanError('contract', 'A passport needs a display name.')
+        if (!/^[0-9a-f]{64}$/i.test(identityCommitment)) {
+          throw new SorobanError('contract', 'An identity commitment must be 32 hex-encoded bytes.')
         }
         state.passport = {
           id: `passport-mock-${nextPassportSeq++}`,
           owner,
+          identityCommitment: identityCommitment.toLowerCase(),
           displayName,
           registeredAt: timestamp(),
           status: 'active',

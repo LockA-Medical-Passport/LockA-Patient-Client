@@ -17,7 +17,13 @@ export interface Passport {
   id: string
   /** Stellar account that owns the passport. */
   owner: string
-  displayName: string
+  /**
+   * Hex-encoded 32-byte commitment anchoring the patient's identity. It is
+   * blinded: nothing about the person can be read off it.
+   */
+  identityCommitment: string
+  /** Optional label for the UI. Null when the patient registered without one. */
+  displayName: string | null
   registeredAt: string
   status: PassportStatus
   /** Guardian/recovery account configured at registration, if any. */
@@ -127,8 +133,11 @@ export interface AuditEvent {
 
 export interface RegisterPassportInput {
   owner: string
-  displayName: string
+  /** Hex-encoded 32-byte identity commitment — see `Passport.identityCommitment`. */
+  identityCommitment: string
+  /** Account that can recover the passport; defaults to the owner on-chain. */
   recoveryAddress?: string | null
+  displayName?: string | null
 }
 
 export interface ApproveAccessRequestInput {
