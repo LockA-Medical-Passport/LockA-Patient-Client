@@ -33,4 +33,5 @@ export type {
   RecordCategory,
   RegisterPassportInput,
   RevokeConsentGrantInput,
+  UpdateRecoveryAddressInput,
 } from './types'

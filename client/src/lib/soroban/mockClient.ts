@@ -25,6 +25,7 @@ import type {
   Provider,
   RegisterPassportInput,
   RevokeConsentGrantInput,
+  UpdateRecoveryAddressInput,
 } from './types'
 
 /** Stands in for a Soroban round trip so loading states are visible in the UI. */
@@ -138,6 +139,19 @@ export function createMockClient(options: MockClientOptions = {}): LockaContract
         }
         recordAuditEvent('passport-registered', state.passport.id, owner, 'You')
         return clone(state.passport)
+      })
+    },
+
+    updateRecoveryAddress({ owner, recoveryAddress }: UpdateRecoveryAddressInput): Promise<Passport> {
+      return call(() => {
+        if (!state.passport) {
+          throw new SorobanError('contract', 'No passport is registered for this account.')
+        }
+        if (state.passport.recoveryAddress === recoveryAddress) {
+          throw new SorobanError('contract', 'That is already the recovery address on file.')
+        }
+        state.passport.recoveryAddress = recoveryAddress
+        return clone({ ...state.passport, owner })
       })
     },
 
