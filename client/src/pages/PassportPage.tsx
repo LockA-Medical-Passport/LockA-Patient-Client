@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { PassportLoadError, PassportLoading } from '../components/passport/PassportStates'
+import { PassportQrCode } from '../components/passport/PassportQrCode'
 import { PassportSummary } from '../components/passport/PassportSummary'
 import { UpdateRecoveryAddressForm } from '../components/passport/UpdateRecoveryAddressForm'
 import { usePassport } from '../lib/passport'
@@ -22,6 +23,7 @@ export function PassportPage() {
   return (
     <div className="flex flex-col gap-6">
       <PassportSummary passport={passport} />
+      <PassportQrCode passportId={passport.id} />
       <UpdateRecoveryAddressForm passport={passport} onUpdated={setPassport} />
     </div>
   )
