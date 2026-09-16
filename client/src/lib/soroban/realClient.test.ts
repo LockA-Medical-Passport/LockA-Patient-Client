@@ -169,6 +169,19 @@ describe('createRealClient — decoding', () => {
     )
   })
 
+  it('reads the passport back when the recovery-address update returns void', async () => {
+    vi.mocked(invokeContract).mockResolvedValue(undefined)
+    vi.mocked(readContract).mockResolvedValue({ id: 'passport-1', owner: PATIENT, recovery_address: MOCK_PROVIDERS.lab.address })
+
+    await expect(
+      client().updateRecoveryAddress({ owner: PATIENT, recoveryAddress: MOCK_PROVIDERS.lab.address }),
+    ).resolves.toMatchObject({ id: 'passport-1', recoveryAddress: MOCK_PROVIDERS.lab.address })
+    expect(invokeContract).toHaveBeenCalledWith(
+      expect.objectContaining({ contractId: 'C_PATIENT', method: 'update_recovery_address' }),
+    )
+    expect(lastArgs(invokeContract)).toEqual([PATIENT, MOCK_PROVIDERS.lab.address])
+  })
+
   it('decodes audit events, defaulting the actor label to the actor address', async () => {
     vi.mocked(readContract).mockResolvedValue([
       {

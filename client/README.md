@@ -77,6 +77,23 @@ Two optional variables tune it: `VITE_MOCK_CONTRACT_LATENCY_MS` (default `350`) 
 `VITE_MOCK_UNREGISTERED_PASSPORT=true`, which starts with no passport for working on the
 registration flow.
 
+## QR code payload format
+
+The passport view (`/passport`) shows a QR code a provider scans to start an access request
+(`PassportQrCode`, encoded/decoded in `src/lib/qr/passportPayload.ts`). The code decodes to JSON:
+
+```json
+{ "type": "locka:passport-id", "v": 1, "passportId": "passport-7f3a91" }
+```
+
+`passportId` is the patient's `Passport.id` from PatientIdentityRegistry — not a short-lived
+signed request token. LockA-Documentation's provider-access flow only specifies that a provider
+"searches by QR code, patient passport ID, or patient-approved contact method"; it doesn't define
+a signed-token contract, and neither locka-api nor locka-contracts currently expose one. If
+locka-provider-client's scanning side wants a signed, time-limited token instead (so a
+photographed/leaked code can't be replayed indefinitely), that's a cross-repo decision to make
+with locka-api first — see the note in `passportPayload.ts` for what would need to change here.
+
 ## Scripts
 
 - `npm run dev` — start the Vite dev server.

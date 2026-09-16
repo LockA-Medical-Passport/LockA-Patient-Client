@@ -16,6 +16,7 @@ import type { LockaContractClient } from './types'
 const CLIENT_METHODS: Record<keyof LockaContractClient, true> = {
   getPassport: true,
   registerPassport: true,
+  updateRecoveryAddress: true,
   getProvider: true,
   listAccessRequests: true,
   approveAccessRequest: true,
@@ -252,6 +253,21 @@ describe('createMockClient — writes', () => {
     expect(latest).toMatchObject({ kind: 'passport-registered', subjectId: passport.id })
   })
 
+  it('updates the recovery address on an existing passport', async () => {
+    const client = mock()
+    const newRecovery = MOCK_PROVIDERS.hospital.address
+
+    const passport = await client.updateRecoveryAddress({
+      owner: MOCK_PATIENT_ADDRESS,
+      recoveryAddress: newRecovery,
+    })
+
+    expect(passport.recoveryAddress).toBe(newRecovery)
+    await expect(client.getPassport(MOCK_PATIENT_ADDRESS)).resolves.toMatchObject({
+      recoveryAddress: newRecovery,
+    })
+  })
+
   it('keeps each client instance isolated', async () => {
     const [first, second] = [mock(), mock()]
     await first.denyAccessRequest({ patient: MOCK_PATIENT_ADDRESS, requestId: pendingRequestId })
@@ -296,6 +312,24 @@ describe('createMockClient — failure modes', () => {
     await expect(
       mock({ unregistered: true }).registerPassport({ owner: MOCK_PATIENT_ADDRESS, identityCommitment: 'nope' }),
     ).rejects.toThrow(/32 hex-encoded bytes/i)
+  })
+
+  it('rejects updating the recovery address when there is no passport', async () => {
+    await expect(
+      mock({ unregistered: true }).updateRecoveryAddress({
+        owner: MOCK_PATIENT_ADDRESS,
+        recoveryAddress: MOCK_PROVIDERS.hospital.address,
+      }),
+    ).rejects.toThrow(/no passport is registered/i)
+  })
+
+  it('rejects setting the recovery address to the one already on file', async () => {
+    const client = mock()
+    const passport = await client.getPassport(MOCK_PATIENT_ADDRESS)
+
+    await expect(
+      client.updateRecoveryAddress({ owner: MOCK_PATIENT_ADDRESS, recoveryAddress: passport!.recoveryAddress! }),
+    ).rejects.toThrow(/already the recovery address/i)
   })
 })
 

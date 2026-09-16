@@ -140,6 +140,12 @@ export interface RegisterPassportInput {
   displayName?: string | null
 }
 
+export interface UpdateRecoveryAddressInput {
+  /** The passport's owner — the contract authorises the change against it. */
+  owner: string
+  recoveryAddress: string
+}
+
 export interface ApproveAccessRequestInput {
   /** Patient account approving — the contract authorises against it. */
   patient: string
@@ -168,6 +174,7 @@ export interface RevokeConsentGrantInput {
 export interface LockaContractClient {
   getPassport(owner: string): Promise<Passport | null>
   registerPassport(input: RegisterPassportInput): Promise<Passport>
+  updateRecoveryAddress(input: UpdateRecoveryAddressInput): Promise<Passport>
   getProvider(address: string): Promise<Provider | null>
   /** All requests addressed to the patient, newest first — filter by status for the pending queue. */
   listAccessRequests(patient: string): Promise<AccessRequest[]>

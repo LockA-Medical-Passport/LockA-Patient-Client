@@ -12,3 +12,9 @@ export type { TextFieldProps } from './TextField'
 
 export { Spinner } from './Spinner'
 export type { SpinnerProps } from './Spinner'
+
+export { StatCard } from './StatCard'
+export type { StatCardProps } from './StatCard'
+
+export { CopyButton } from './CopyButton'
+export type { CopyButtonProps } from './CopyButton'

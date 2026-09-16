@@ -33,12 +33,14 @@ import type {
   RecordCategory,
   RegisterPassportInput,
   RevokeConsentGrantInput,
+  UpdateRecoveryAddressInput,
 } from './types'
 
 /** Contract-side method names, in one place so bindings changes stay local. */
 const METHODS = {
   getPassport: 'get_passport',
   registerPassport: 'register_passport',
+  updateRecoveryAddress: 'update_recovery_address',
   getProvider: 'get_provider',
   listAccessRequests: 'list_access_requests',
   approveAccessRequest: 'approve_access_request',
@@ -338,6 +340,20 @@ export function createRealClient(): LockaContractClient {
       const passport = toPassport(raw) ?? (await getPassport(owner))
       if (!passport) {
         throw new SorobanError('contract', `Registered a passport for ${owner} but could not read it back.`)
+      }
+      return passport
+    },
+
+    async updateRecoveryAddress({ owner, recoveryAddress }: UpdateRecoveryAddressInput): Promise<Passport> {
+      const raw = await invokeContract({
+        contractId: identityRegistry(),
+        method: METHODS.updateRecoveryAddress,
+        args: [addressArg(owner), stringArg(recoveryAddress)],
+      })
+      // Contracts that return void still wrote the change — read it back.
+      const passport = toPassport(raw) ?? (await getPassport(owner))
+      if (!passport) {
+        throw new SorobanError('contract', `Updated the recovery address for ${owner} but could not read it back.`)
       }
       return passport
     },
