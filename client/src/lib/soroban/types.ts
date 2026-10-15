@@ -89,11 +89,13 @@ export interface ConsentGrant {
  * A record commitment from the RecordCommitmentRegistry. The record's contents
  * live encrypted off-chain at `storageUri`; only `commitment` is anchored.
  */
+export type MedicalRecordStatus = 'active' | 'amended' | 'revoked'
+
 export interface MedicalRecord {
   id: string
   title: string
   category: RecordCategory
-  /** Hex-encoded SHA-256 of the encrypted record, anchored on-chain. */
+  /** Hex-encoded SHA-256 of the canonical decrypted content, anchored on-chain. */
   commitment: string
   /** Pointer to the encrypted blob in off-chain storage. */
   storageUri: string
@@ -102,6 +104,7 @@ export interface MedicalRecord {
   issuedAt: string
   /** When the commitment was written to the ledger. */
   anchoredAt: string
+  status: MedicalRecordStatus
 }
 
 export type AuditEventKind =

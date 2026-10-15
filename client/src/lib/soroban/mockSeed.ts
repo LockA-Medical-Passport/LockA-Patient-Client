@@ -14,6 +14,7 @@ import type {
   Passport,
   Provider,
 } from './types'
+import { MOCK_RECORD_COMMITMENTS } from '../records/mockData'
 
 /** The patient the seed data belongs to. */
 export const MOCK_PATIENT_ADDRESS = 'GB6YGPCU5VORFBS7DOTSQTYBMCYWKDQPNAVUVGD3XOXEVUUWQOCMDRIW'
@@ -118,7 +119,7 @@ const MOCK_CONSENT_GRANTS: ConsentGrant[] = [
     provider: MOCK_PROVIDERS.lab,
     scopes: ['lab-result'],
     grantedAt: '2026-07-22T12:02:00.000Z',
-    expiresAt: '2026-10-22T12:02:00.000Z',
+    expiresAt: '2030-10-22T12:02:00.000Z',
     revokedAt: null,
     status: 'active',
   },
@@ -159,41 +160,45 @@ const MOCK_RECORDS: MedicalRecord[] = [
     id: 'rec-9f21',
     title: 'Full blood count panel',
     category: 'lab-result',
-    commitment: 'f28c4849b948e22742fa40d46037e37be97b9cd272175b1839b7c552336e8149',
+    commitment: MOCK_RECORD_COMMITMENTS['rec-9f21'],
     storageUri: 'locka://records/9f21',
     issuedBy: MOCK_PROVIDERS.lab,
     issuedAt: '2026-07-20T10:15:00.000Z',
     anchoredAt: '2026-07-20T10:22:00.000Z',
+    status: 'active',
   },
   {
     id: 'rec-8c04',
     title: 'Chest X-ray report',
     category: 'imaging',
-    commitment: 'c9015b4c9e71553f93d149e7258486f6fcb02d0f6d6edffd2899f28c78c6af64',
+    commitment: MOCK_RECORD_COMMITMENTS['rec-8c04'],
     storageUri: 'locka://records/8c04',
     issuedBy: MOCK_PROVIDERS.hospital,
     issuedAt: '2026-06-28T15:40:00.000Z',
     anchoredAt: '2026-06-28T15:51:00.000Z',
+    status: 'amended',
   },
   {
     id: 'rec-7b55',
     title: 'Amoxicillin 500mg — 7 day course',
     category: 'prescription',
-    commitment: 'dd4450daa790e88fadf612b39783d942f04ce7d69ba2fae91dbb038385c3a477',
+    commitment: MOCK_RECORD_COMMITMENTS['rec-7b55'],
     storageUri: 'locka://records/7b55',
     issuedBy: MOCK_PROVIDERS.clinic,
     issuedAt: '2026-06-11T17:10:00.000Z',
     anchoredAt: '2026-06-11T17:14:00.000Z',
+    status: 'active',
   },
   {
     id: 'rec-6a18',
     title: 'Tetanus booster',
     category: 'immunization',
-    commitment: 'bf8b06c9c864d65e492e16135a0c59ce9986ade254f300f081ce37ff1d16af5d',
+    commitment: MOCK_RECORD_COMMITMENTS['rec-6a18'],
     storageUri: 'locka://records/6a18',
     issuedBy: MOCK_PROVIDERS.clinic,
     issuedAt: '2026-03-09T11:00:00.000Z',
     anchoredAt: '2026-03-09T11:06:00.000Z',
+    status: 'revoked',
   },
 ]
 
@@ -247,6 +252,16 @@ const MOCK_AUDIT_EVENTS: AuditEvent[] = [
     occurredAt: '2026-07-20T10:22:00.000Z',
     ledger: 1_259_431,
     txHash: '9bba3d52d907bcbe4adad2168c9ed629b9fa367c7f45f08b62182a33e169b4de',
+  },
+  {
+    id: 'evt-3260',
+    kind: 'access-denied',
+    actor: MOCK_PATIENT_ADDRESS,
+    actorLabel: 'You',
+    subjectId: 'req-1024',
+    occurredAt: '2026-05-02T10:18:00.000Z',
+    ledger: 1_176_420,
+    txHash: '5235312bfdad144c62c9fe5f2ee5655d060607f5fb6b11ac510b37c0184c696a',
   },
   {
     id: 'evt-3244',

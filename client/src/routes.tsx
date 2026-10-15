@@ -6,6 +6,7 @@ import { PassportLayout } from './pages/PassportLayout'
 import { PassportPage } from './pages/PassportPage'
 import { RegisterPassportPage } from './pages/RegisterPassportPage'
 import { RecordsPage } from './pages/RecordsPage'
+import { RecordDetailPage } from './pages/RecordDetailPage'
 import { ConsentPage } from './pages/ConsentPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
@@ -24,6 +25,14 @@ export function AppRoutes() {
           element={
             <RequireWallet description="Records are encrypted to your passport. Connect Freighter to decrypt and browse them — LockA never sees your keys.">
               <RecordsPage />
+            </RequireWallet>
+          }
+        />
+        <Route
+          path="records/:id"
+          element={
+            <RequireWallet description="Records are encrypted to your passport. Connect Freighter to decrypt and verify this record — LockA never sees your keys.">
+              <RecordDetailPage />
             </RequireWallet>
           }
         />
