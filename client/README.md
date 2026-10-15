@@ -58,8 +58,9 @@ The seed ([mockSeed.ts](src/lib/soroban/mockSeed.ts)) covers:
   pharmacy, insurer)
 - two pending access requests, and the settled requests behind the current grants
 - four consent grants — two active, one revoked, one expired
-- four record commitments across lab result, imaging, prescription, and immunization
-- seven audit events — requests, an approval, a revocation, a record anchor and view,
+- four record commitments across lab result, imaging, prescription, and immunization,
+  with matching off-chain mock content and active/amended/revoked states
+- eight audit events — requests, an approval, a rejection, a revocation, a record anchor and view,
   and the original registration
 
 Behaviour worth knowing:
@@ -76,6 +77,23 @@ Behaviour worth knowing:
 Two optional variables tune it: `VITE_MOCK_CONTRACT_LATENCY_MS` (default `350`) and
 `VITE_MOCK_UNREGISTERED_PASSPORT=true`, which starts with no passport for working on the
 registration flow.
+
+## Record content and integrity
+
+The record list combines commitments from `RecordCommitmentRegistry` with decrypted content
+availability from `locka-api`. These concerns intentionally use separate clients:
+
+- `LockaContractClient.listRecords()` / `getRecord()` read public metadata and SHA-256
+  commitments from Soroban.
+- `RecordContentClient.getRecordContent()` calls
+  `GET {VITE_API_BASE_URL}/records/:id/content` for already-authorised decrypted bytes.
+
+The API may return text directly or a JSON envelope shaped as
+`{"content":"<exact UTF-8 text>","contentType":"application/json"}`. The detail page hashes the
+exact returned `content` string with the browser Web Crypto API and compares that digest with
+the on-chain commitment; it never trusts an API-provided verification flag. In mock-contract
+mode, an in-memory record-content client serves deterministic bodies whose hashes match the
+seeded commitments.
 
 ## QR code payload format
 

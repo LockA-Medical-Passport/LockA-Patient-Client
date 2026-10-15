@@ -26,6 +26,7 @@ import type {
   DenyAccessRequestInput,
   LockaContractClient,
   MedicalRecord,
+  MedicalRecordStatus,
   Passport,
   PassportStatus,
   Provider,
@@ -64,6 +65,7 @@ const RECORD_CATEGORIES: readonly RecordCategory[] = [
 ]
 const ACCESS_REQUEST_STATUSES: readonly AccessRequestStatus[] = ['pending', 'approved', 'denied', 'expired']
 const CONSENT_GRANT_STATUSES: readonly ConsentGrantStatus[] = ['active', 'revoked', 'expired']
+const MEDICAL_RECORD_STATUSES: readonly MedicalRecordStatus[] = ['active', 'amended', 'revoked']
 const PASSPORT_STATUSES: readonly PassportStatus[] = ['active', 'suspended']
 const AUDIT_EVENT_KINDS: readonly AuditEventKind[] = [
   'passport-registered',
@@ -261,6 +263,7 @@ function toRecord(value: unknown): MedicalRecord {
     issuedBy: toProvider(pick(raw, 'issued_by', 'issuedBy', 'provider')),
     issuedAt: timestamp(pick(raw, 'issued_at', 'issuedAt')),
     anchoredAt: timestamp(pick(raw, 'anchored_at', 'anchoredAt', 'created_at')),
+    status: oneOf(pick(raw, 'status'), MEDICAL_RECORD_STATUSES, 'active'),
   }
 }
 

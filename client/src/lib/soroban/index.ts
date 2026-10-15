@@ -26,6 +26,7 @@ export type {
   DenyAccessRequestInput,
   LockaContractClient,
   MedicalRecord,
+  MedicalRecordStatus,
   Passport,
   PassportStatus,
   Provider,

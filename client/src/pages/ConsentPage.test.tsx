@@ -158,16 +158,135 @@ describe('ConsentPage — Pending tab', () => {
   })
 })
 
-describe('ConsentPage — other tabs', () => {
-  it('shows placeholders for the not-yet-built Active Grants and History tabs', async () => {
+describe('ConsentPage — Active Grants tab', () => {
+  it('lists live grants with provider, scope, granted date, and expiry countdown', async () => {
     const user = userEvent.setup()
     mockWallet()
     renderPage()
 
     await user.click(screen.getByRole('tab', { name: /active grants/i }))
-    expect(screen.getByText(/issue #15/i)).toBeInTheDocument()
+
+    expect(await screen.findByText('Zenith Diagnostics Lab')).toBeInTheDocument()
+    expect(screen.getByText('Harmony Family Clinic')).toBeInTheDocument()
+    expect(screen.getByText('Lab Results')).toBeInTheDocument()
+    expect(screen.getByText(/remaining/i)).toBeInTheDocument()
+    expect(screen.getByText(/until revoked/i)).toBeInTheDocument()
+  })
+
+  it('cancels a revoke at the confirmation step without calling the contract', async () => {
+    const user = userEvent.setup()
+    mockWallet()
+    const client = createMockClient({ latencyMs: 0 })
+    const revoke = vi.spyOn(client, 'revokeConsentGrant')
+    renderPage(client)
+
+    await user.click(screen.getByRole('tab', { name: /active grants/i }))
+    await screen.findByText('Zenith Diagnostics Lab')
+    await user.click(screen.getAllByRole('button', { name: /revoke access/i })[0])
+    expect(screen.getByText(/irreversible on-chain revocation/i)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /^cancel$/i }))
+
+    expect(revoke).not.toHaveBeenCalled()
+    expect(screen.getByText('Zenith Diagnostics Lab')).toBeInTheDocument()
+  })
+
+  it('revokes optimistically after confirmation and removes the grant', async () => {
+    const user = userEvent.setup()
+    mockWallet()
+    const client = createMockClient({ latencyMs: 0 })
+    const revoke = vi.spyOn(client, 'revokeConsentGrant')
+    renderPage(client)
+
+    await user.click(screen.getByRole('tab', { name: /active grants/i }))
+    await screen.findByText('Zenith Diagnostics Lab')
+    await user.click(screen.getAllByRole('button', { name: /revoke access/i })[0])
+    await user.click(screen.getByRole('button', { name: /confirm revoke/i }))
+
+    expect(screen.queryByText('Zenith Diagnostics Lab')).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(revoke).toHaveBeenCalledWith({ patient: MOCK_PATIENT_ADDRESS, grantId: 'grant-508' }),
+    )
+    expect(await screen.findByText('Access revoked')).toBeInTheDocument()
+  })
+
+  it('restores the grant and shows an error toast when revocation fails', async () => {
+    const user = userEvent.setup()
+    mockWallet()
+    const client = createMockClient({ latencyMs: 0 })
+    vi.spyOn(client, 'revokeConsentGrant').mockRejectedValue(
+      new SorobanError('submit', 'Transaction submission failed with status ERROR.'),
+    )
+    renderPage(client)
+
+    await user.click(screen.getByRole('tab', { name: /active grants/i }))
+    await screen.findByText('Zenith Diagnostics Lab')
+    await user.click(screen.getAllByRole('button', { name: /revoke access/i })[0])
+    await user.click(screen.getByRole('button', { name: /confirm revoke/i }))
+
+    expect(await screen.findByText('Revocation failed')).toBeInTheDocument()
+    expect(await screen.findByText('Zenith Diagnostics Lab')).toBeInTheDocument()
+  })
+
+  it('does not show a grant whose time limit has elapsed', async () => {
+    const user = userEvent.setup()
+    mockWallet()
+    const client = createMockClient({ latencyMs: 0 })
+    const [grant] = await client.listConsentGrants(MOCK_PATIENT_ADDRESS)
+    vi.spyOn(client, 'listConsentGrants').mockResolvedValue([
+      { ...grant, status: 'active', expiresAt: '2000-01-01T00:00:00.000Z' },
+    ])
+    renderPage(client)
+
+    await user.click(screen.getByRole('tab', { name: /active grants/i }))
+    expect(await screen.findByText(/no providers currently have access/i)).toBeInTheDocument()
+    expect(screen.queryByText(grant.provider.name)).not.toBeInTheDocument()
+  })
+})
+
+describe('ConsentPage — History tab', () => {
+  it('renders provider, scope, status, and timestamp for past consent events', async () => {
+    const user = userEvent.setup()
+    mockWallet()
+    renderPage()
 
     await user.click(screen.getByRole('tab', { name: /history/i }))
-    expect(screen.getByText(/issue #16/i)).toBeInTheDocument()
+    expect(await screen.findAllByText('Zenith Diagnostics Lab')).not.toHaveLength(0)
+    expect(screen.getAllByText(/^granted$/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^revoked$/i).length).toBeGreaterThan(1)
+    expect(screen.getAllByText(/^rejected$/i).length).toBeGreaterThan(1)
+    expect(screen.getAllByText(/^expired$/i).length).toBeGreaterThan(1)
+    expect(screen.getAllByText(/lab results/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/2026/i).length).toBeGreaterThan(0)
+  })
+
+  it('filters history by provider and status', async () => {
+    const user = userEvent.setup()
+    mockWallet()
+    renderPage()
+
+    await user.click(screen.getByRole('tab', { name: /history/i }))
+    await screen.findAllByText('Zenith Diagnostics Lab')
+
+    await user.type(screen.getByRole('searchbox', { name: /provider/i }), 'Sterling')
+    expect(screen.getByText('Sterling Health Insurance')).toBeInTheDocument()
+    expect(screen.queryByText('Zenith Diagnostics Lab')).not.toBeInTheDocument()
+
+    await user.selectOptions(screen.getByRole('combobox', { name: /status/i }), 'revoked')
+    expect(screen.getByText(/no history matches these filters/i)).toBeInTheDocument()
+    await user.selectOptions(screen.getByRole('combobox', { name: /status/i }), 'rejected')
+    expect(screen.getByText('Sterling Health Insurance')).toBeInTheDocument()
+  })
+
+  it('shows the history empty state', async () => {
+    const user = userEvent.setup()
+    mockWallet()
+    const client = createMockClient({ latencyMs: 0 })
+    vi.spyOn(client, 'listAuditEvents').mockResolvedValue([])
+    vi.spyOn(client, 'listConsentGrants').mockResolvedValue([])
+    vi.spyOn(client, 'listAccessRequests').mockResolvedValue([])
+    renderPage(client)
+
+    await user.click(screen.getByRole('tab', { name: /history/i }))
+    expect(await screen.findByText(/no consent history yet/i)).toBeInTheDocument()
   })
 })
