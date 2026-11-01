@@ -18,6 +18,7 @@ import { SorobanError } from './errors'
 import type {
   AccessRequest,
   AccessRequestStatus,
+  AnchorRecordInput,
   ApproveAccessRequestInput,
   AuditEvent,
   AuditEventKind,
@@ -31,6 +32,7 @@ import type {
   PassportStatus,
   Provider,
   ProviderKind,
+  ProviderStatus,
   RecordCategory,
   RegisterPassportInput,
   RevokeConsentGrantInput,
@@ -50,10 +52,12 @@ const METHODS = {
   revokeConsentGrant: 'revoke_consent_grant',
   listRecords: 'list_records',
   getRecord: 'get_record',
+  anchorRecord: 'anchor_record',
   listAuditEvents: 'list_audit_events',
 } as const
 
 const PROVIDER_KINDS: readonly ProviderKind[] = ['hospital', 'clinic', 'lab', 'pharmacy', 'insurer', 'other']
+const PROVIDER_STATUSES: readonly ProviderStatus[] = ['verified', 'pending', 'suspended', 'revoked']
 const RECORD_CATEGORIES: readonly RecordCategory[] = [
   'lab-result',
   'imaging',
@@ -74,7 +78,9 @@ const AUDIT_EVENT_KINDS: readonly AuditEventKind[] = [
   'access-denied',
   'access-revoked',
   'record-anchored',
+  'record-updated',
   'record-viewed',
+  'device-attested',
   'other',
 ]
 
@@ -192,18 +198,28 @@ function scopes(value: unknown): RecordCategory[] {
 /** Providers come back either as a struct or as a bare account address. */
 function toProvider(value: unknown): Provider {
   if (typeof value === 'string') {
-    return { address: value, name: value, kind: 'other', verified: false }
+    return { address: value, name: value, kind: 'other', status: 'pending', verified: false }
   }
   const raw = asStruct(value)
   if (!raw) {
-    return { address: '', name: 'Unknown provider', kind: 'other', verified: false }
+    return { address: '', name: 'Unknown provider', kind: 'other', status: 'pending', verified: false }
   }
   const address = text(pick(raw, 'address', 'account', 'provider', 'id'))
+  const explicitStatus = pick(raw, 'status', 'verification_status', 'verificationStatus')
+  // Older deployments only expose a boolean; treat an unrecognised state as
+  // pending rather than verified, so the badge never overstates trust.
+  const status =
+    explicitStatus == null
+      ? flag(pick(raw, 'verified', 'is_verified', 'isVerified'))
+        ? 'verified'
+        : 'pending'
+      : oneOf(explicitStatus, PROVIDER_STATUSES, 'pending')
   return {
     address,
     name: text(pick(raw, 'name', 'display_name', 'displayName'), address || 'Unknown provider'),
     kind: oneOf(pick(raw, 'kind', 'provider_kind', 'providerKind', 'type'), PROVIDER_KINDS, 'other'),
-    verified: flag(pick(raw, 'verified', 'is_verified', 'isVerified')),
+    status,
+    verified: status === 'verified',
   }
 }
 
@@ -444,6 +460,51 @@ export function createRealClient(): LockaContractClient {
         args: [stringArg(recordId)],
       })
       return asStruct(raw) ? toRecord(raw) : null
+    },
+
+    async anchorRecord({
+      patient,
+      title,
+      category,
+      commitment,
+      storageUri,
+      recordId,
+      contentType,
+    }: AnchorRecordInput): Promise<MedicalRecord> {
+      // Provisional argument order, like the rest of METHODS: locka-contracts
+      // has not published bindings. Update this one call site when they do.
+      const raw = await invokeContract({
+        contractId: recordRegistry(),
+        method: METHODS.anchorRecord,
+        args: [
+          addressArg(patient),
+          stringArg(title),
+          stringArg(category),
+          stringArg(commitment.toLowerCase()),
+          stringArg(storageUri),
+          optionalStringArg(recordId),
+          optionalStringArg(contentType),
+        ],
+      })
+      if (asStruct(raw)) {
+        return toRecord(raw)
+      }
+      const rawList = await readContract({
+        contractId: recordRegistry(),
+        method: METHODS.listRecords,
+        args: [addressArg(patient)],
+      })
+      const record = list(rawList)
+        .map(toRecord)
+        .find(
+          (candidate) =>
+            candidate.commitment.toLowerCase() === commitment.toLowerCase() &&
+            (recordId == null || candidate.id === recordId),
+        )
+      if (!record) {
+        throw new SorobanError('contract', 'Anchored the record but could not read it back.')
+      }
+      return record
     },
 
     async listAuditEvents(patient: string): Promise<AuditEvent[]> {

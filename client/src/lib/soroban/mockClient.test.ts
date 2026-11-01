@@ -25,6 +25,7 @@ const CLIENT_METHODS: Record<keyof LockaContractClient, true> = {
   revokeConsentGrant: true,
   listRecords: true,
   getRecord: true,
+  anchorRecord: true,
   listAuditEvents: true,
 }
 const METHOD_NAMES = Object.keys(CLIENT_METHODS) as (keyof LockaContractClient)[]

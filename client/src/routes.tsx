@@ -7,7 +7,9 @@ import { PassportPage } from './pages/PassportPage'
 import { RegisterPassportPage } from './pages/RegisterPassportPage'
 import { RecordsPage } from './pages/RecordsPage'
 import { RecordDetailPage } from './pages/RecordDetailPage'
+import { UploadRecordPage } from './pages/UploadRecordPage'
 import { ConsentPage } from './pages/ConsentPage'
+import { ActivityPage } from './pages/ActivityPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export function AppRoutes() {
@@ -29,6 +31,14 @@ export function AppRoutes() {
           }
         />
         <Route
+          path="records/upload"
+          element={
+            <RequireWallet description="Uploads are encrypted to your passport and anchored by your account. Connect Freighter to add a record — LockA never sees your keys.">
+              <UploadRecordPage />
+            </RequireWallet>
+          }
+        />
+        <Route
           path="records/:id"
           element={
             <RequireWallet description="Records are encrypted to your passport. Connect Freighter to decrypt and verify this record — LockA never sees your keys.">
@@ -41,6 +51,14 @@ export function AppRoutes() {
           element={
             <RequireWallet description="Approving or revoking provider access is signed by your account. Connect Freighter to manage consent — LockA never sees your keys.">
               <ConsentPage />
+            </RequireWallet>
+          }
+        />
+        <Route
+          path="activity"
+          element={
+            <RequireWallet description="Your activity feed is tied to your passport. Connect Freighter to see who requested, viewed, or updated your records — LockA never sees your keys.">
+              <ActivityPage />
             </RequireWallet>
           }
         />

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ConsentGrant } from '../../lib/soroban'
+import { ProviderBadge } from '../providers'
 import { Badge, Button, Card } from '../ui'
 import { formatDateTime, formatGrantExpiry, formatScopes } from './format'
 
@@ -17,11 +18,11 @@ export function ActiveGrantCard({ grant, nowMs, onRevoke }: ActiveGrantCardProps
     <Card className="p-5">
       <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h2 className="font-semibold text-white text-sm">{grant.provider.name}</h2>
+            <ProviderBadge provider={grant.provider} />
             <Badge color="green">Active</Badge>
           </div>
-          <p className="text-xs text-slate-500 capitalize">{grant.provider.kind}</p>
         </div>
         {!isConfirming && (
           <Button variant="danger" onClick={() => setIsConfirming(true)}>

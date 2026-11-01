@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { MedicalRecord } from '../../lib/soroban'
+import { ProviderBadge } from '../providers'
 import { Badge, Card, Spinner } from '../ui'
 import { formatRecordCategory, formatRecordDate, formatRecordStatus } from './format'
 
@@ -27,7 +28,10 @@ export function RecordCard({
             <Badge color="blue">{formatRecordCategory(record.category)}</Badge>
             <Badge color={STATUS_COLORS[record.status]}>{formatRecordStatus(record.status)}</Badge>
           </div>
-          <p className="text-sm text-slate-400">{record.issuedBy.name}</p>
+          <p className="text-sm text-slate-400 inline-flex items-center gap-2 flex-wrap">
+            <span>{record.issuedBy.name}</span>
+            <ProviderBadge provider={record.issuedBy} />
+          </p>
         </div>
         <Link
           to={`/records/${encodeURIComponent(record.id)}`}

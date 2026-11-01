@@ -14,6 +14,7 @@ import { SorobanError } from './errors'
 import { createMockState, MOCK_PATIENT_ADDRESS, type MockState } from './mockSeed'
 import type {
   AccessRequest,
+  AnchorRecordInput,
   ApproveAccessRequestInput,
   AuditEvent,
   AuditEventKind,
@@ -63,6 +64,7 @@ export function createMockClient(options: MockClientOptions = {}): LockaContract
   let nextGrantSeq = 600
   let nextEventSeq = 4000
   let nextPassportSeq = 1
+  let nextRecordSeq = 900
 
   /** Every call goes through here, so all of them share the artificial latency. */
   async function call<T>(run: () => T): Promise<T> {
@@ -237,6 +239,46 @@ export function createMockClient(options: MockClientOptions = {}): LockaContract
       return call(() => {
         const record = state.records.find((candidate) => candidate.id === recordId)
         return record ? clone(record) : null
+      })
+    },
+
+    anchorRecord(input: AnchorRecordInput): Promise<MedicalRecord> {
+      return call(() => {
+        if (!state.passport) {
+          throw new SorobanError('contract', 'No passport is registered for this account.')
+        }
+        if (!/^[0-9a-f]{64}$/i.test(input.commitment)) {
+          throw new SorobanError('contract', 'A record commitment must be 32 hex-encoded bytes.')
+        }
+        if (input.storageUri.trim() === '') {
+          throw new SorobanError('contract', 'A record storage URI is required.')
+        }
+        const id = input.recordId?.trim() || `rec-${nextRecordSeq++}`
+        if (state.records.some((candidate) => candidate.id === id)) {
+          throw new SorobanError('contract', `A record with id '${id}' already exists.`)
+        }
+
+        const record: MedicalRecord = {
+          id,
+          title: input.title.trim() || 'Patient-uploaded record',
+          category: input.category,
+          commitment: input.commitment.toLowerCase(),
+          storageUri: input.storageUri,
+          issuedBy: {
+            address: input.patient,
+            name: 'Patient upload',
+            kind: 'other',
+            status: 'verified',
+            verified: true,
+          },
+          issuedAt: timestamp(),
+          anchoredAt: timestamp(),
+          status: 'active',
+        }
+        state.records.unshift(record)
+        state.ledger += 1
+        recordAuditEvent('record-anchored', record.id, input.patient, 'You')
+        return clone(record)
       })
     },
 

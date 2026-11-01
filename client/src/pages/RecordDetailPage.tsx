@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { formatRecordCategory, formatRecordDate, formatRecordStatus } from '../components/records/format'
+import { ProviderBadge } from '../components/providers'
 import { Button, Card, Spinner } from '../components/ui'
 import { useRecordContentClient, verifyRecordIntegrity, type RecordContent } from '../lib/records'
 import { describeUnknownError, useSorobanClient, type MedicalRecord } from '../lib/soroban'
@@ -146,9 +147,15 @@ export function RecordDetailPage() {
       </Link>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white mb-2">{record.title}</h1>
-        <p className="text-sm text-slate-400">
-          {formatRecordCategory(record.category)} · Issued by <span>{record.issuedBy.name}</span> ·{' '}
-          {formatRecordDate(record.issuedAt)}
+        <p className="text-sm text-slate-400 flex items-center gap-2 flex-wrap">
+          <span>{formatRecordCategory(record.category)}</span>
+          <span aria-hidden="true">·</span>
+          <span>
+            Issued by <span>{record.issuedBy.name}</span>
+          </span>
+          <ProviderBadge provider={record.issuedBy} />
+          <span aria-hidden="true">·</span>
+          <span>{formatRecordDate(record.issuedAt)}</span>
         </p>
         <p className="text-xs text-slate-500 mt-1">Status: {formatRecordStatus(record.status)}</p>
       </div>

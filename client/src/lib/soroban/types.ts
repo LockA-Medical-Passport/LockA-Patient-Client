@@ -34,13 +34,18 @@ export type PassportStatus = 'active' | 'suspended'
 
 export type ProviderKind = 'hospital' | 'clinic' | 'lab' | 'pharmacy' | 'insurer' | 'other'
 
+/** Verification state held by the read-only ProviderRegistry. */
+export type ProviderStatus = 'verified' | 'pending' | 'suspended' | 'revoked'
+
 /** A healthcare organisation from the ProviderRegistry. */
 export interface Provider {
   /** Stellar account of the provider — the identifier used by every contract. */
   address: string
   name: string
   kind: ProviderKind
-  /** Whether the registry has verified this provider's credentials. */
+  /** Registry verification state — the source of truth for `ProviderBadge`. */
+  status: ProviderStatus
+  /** Convenience mirror of `status === 'verified'` for older call sites. */
   verified: boolean
 }
 
@@ -114,7 +119,9 @@ export type AuditEventKind =
   | 'access-denied'
   | 'access-revoked'
   | 'record-anchored'
+  | 'record-updated'
   | 'record-viewed'
+  | 'device-attested'
   | 'other'
 
 /** An entry in the patient's access history, from the AuditEventEmitter. */
@@ -169,6 +176,20 @@ export interface RevokeConsentGrantInput {
   grantId: string
 }
 
+/** Writes the commitment for an already-uploaded off-chain record blob. */
+export interface AnchorRecordInput {
+  patient: string
+  title: string
+  category: RecordCategory
+  /** Hex-encoded SHA-256 of the exact plaintext content in off-chain storage. */
+  commitment: string
+  storageUri: string
+  /** Off-chain record id, when the vault assigned one; the contract may override it. */
+  recordId?: string
+  /** MIME type of the decrypted content the vault returns. */
+  contentType?: string
+}
+
 /**
  * The single interface every LockA feature talks to. Both the real Soroban
  * client and the in-memory mock implement it, so feature code never branches
@@ -188,6 +209,8 @@ export interface LockaContractClient {
   revokeConsentGrant(input: RevokeConsentGrantInput): Promise<ConsentGrant>
   listRecords(patient: string): Promise<MedicalRecord[]>
   getRecord(recordId: string): Promise<MedicalRecord | null>
+  /** Anchors a commitment after the encrypted blob has been uploaded off-chain. */
+  anchorRecord(input: AnchorRecordInput): Promise<MedicalRecord>
   /** The patient's access history, newest first. */
   listAuditEvents(patient: string): Promise<AuditEvent[]>
 }

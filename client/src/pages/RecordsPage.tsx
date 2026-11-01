@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { RecordCard, type ContentAvailability } from '../components/records/RecordCard'
 import { formatRecordCategory, formatRecordDate } from '../components/records/format'
 import { Button, Card, Spinner } from '../components/ui'
@@ -82,9 +83,17 @@ export function RecordsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-16">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-1">Medical Records</h1>
-        <p className="text-slate-400 text-sm">Browse your records and verify their on-chain integrity.</p>
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-1">Medical Records</h1>
+          <p className="text-slate-400 text-sm">Browse your records and verify their on-chain integrity.</p>
+        </div>
+        <Link
+          to="/records/upload"
+          className="btn-primary px-4 py-2 rounded-lg text-sm inline-flex items-center justify-center font-semibold"
+        >
+          Upload record
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_14rem] gap-3 mb-6">

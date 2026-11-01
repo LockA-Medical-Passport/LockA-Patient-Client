@@ -18,6 +18,7 @@ export { MOCK_PATIENT_ADDRESS, MOCK_PROVIDERS } from './mockSeed'
 export type {
   AccessRequest,
   AccessRequestStatus,
+  AnchorRecordInput,
   ApproveAccessRequestInput,
   AuditEvent,
   AuditEventKind,
@@ -31,6 +32,7 @@ export type {
   PassportStatus,
   Provider,
   ProviderKind,
+  ProviderStatus,
   RecordCategory,
   RegisterPassportInput,
   RevokeConsentGrantInput,
