@@ -102,6 +102,7 @@ describe('Dashboard — connected, registered', () => {
     await screen.findByText('active')
     expect(screen.getByRole('link', { name: /medical records/i })).toHaveAttribute('href', '/records')
     expect(screen.getByRole('link', { name: /consent management/i })).toHaveAttribute('href', '/consent')
+    expect(screen.getByRole('link', { name: /ai summary/i })).toHaveAttribute('href', '/summary')
   })
 
   it('copies the passport id to the clipboard', async () => {

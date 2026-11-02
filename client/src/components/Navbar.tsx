@@ -1,7 +1,7 @@
 import { useState, type ComponentType } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { LockaLogo } from './LockaLogo'
-import { ActivityIcon, ConsentIcon, DashboardIcon, PassportIcon, RecordsIcon, type NavIconProps } from './NavIcons'
+import { ActivityIcon, ConsentIcon, DashboardIcon, PassportIcon, RecordsIcon, SummaryIcon, type NavIconProps } from './NavIcons'
 import { WalletButton } from './wallet/WalletButton'
 
 interface NavItem {
@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/records', label: 'Records', Icon: RecordsIcon },
   { to: '/consent', label: 'Consent', Icon: ConsentIcon },
   { to: '/activity', label: 'Activity', Icon: ActivityIcon },
+  { to: '/summary', label: 'Summary', Icon: SummaryIcon },
 ]
 
 function navLinkClassName({ isActive }: { isActive: boolean }) {

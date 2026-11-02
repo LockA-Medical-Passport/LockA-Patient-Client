@@ -10,6 +10,7 @@ import { RecordDetailPage } from './pages/RecordDetailPage'
 import { UploadRecordPage } from './pages/UploadRecordPage'
 import { ConsentPage } from './pages/ConsentPage'
 import { ActivityPage } from './pages/ActivityPage'
+import { SummaryPage } from './pages/SummaryPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export function AppRoutes() {
@@ -59,6 +60,14 @@ export function AppRoutes() {
           element={
             <RequireWallet description="Your activity feed is tied to your passport. Connect Freighter to see who requested, viewed, or updated your records — LockA never sees your keys.">
               <ActivityPage />
+            </RequireWallet>
+          }
+        />
+        <Route
+          path="summary"
+          element={
+            <RequireWallet description="Your AI summary is generated from records you have approved. Connect Freighter to load it — LockA never sees your keys.">
+              <SummaryPage />
             </RequireWallet>
           }
         />

@@ -8,6 +8,7 @@ import {
 } from '../lib/records'
 import { SorobanClientProvider } from '../lib/soroban'
 import type { LockaContractClient } from '../lib/soroban'
+import { PatientSummaryProvider, type PatientSummaryClient } from '../lib/summary'
 import { WalletProvider } from '../lib/wallet'
 
 export interface AppProvidersProps {
@@ -18,6 +19,8 @@ export interface AppProvidersProps {
   recordContentClient?: RecordContentClient
   /** Overrides the encrypted upload stub — for tests and previews. */
   recordUploadClient?: RecordUploadClient
+  /** Overrides the AI summary client — for tests and previews. */
+  patientSummaryClient?: PatientSummaryClient
 }
 
 /**
@@ -30,6 +33,8 @@ export interface AppProvidersProps {
  * 4. `RecordContentProvider` — the separate off-chain, decrypted record-content client.
  * 5. `RecordUploadProvider` — encrypted patient-initiated uploads, stubbed until locka-api
  *    publishes its endpoint.
+ * 6. `PatientSummaryProvider` — AI-generated summaries fetched from locka-api, never generated
+ *    in the browser.
  *
  * Routing stays outside this wrapper so tests can supply their own router.
  */
@@ -38,13 +43,16 @@ export function AppProviders({
   contractClient,
   recordContentClient,
   recordUploadClient,
+  patientSummaryClient,
 }: AppProvidersProps) {
   return (
     <ToastProvider>
       <WalletProvider>
         <SorobanClientProvider client={contractClient}>
           <RecordContentProvider client={recordContentClient}>
-            <RecordUploadProvider client={recordUploadClient}>{children}</RecordUploadProvider>
+            <RecordUploadProvider client={recordUploadClient}>
+              <PatientSummaryProvider client={patientSummaryClient}>{children}</PatientSummaryProvider>
+            </RecordUploadProvider>
           </RecordContentProvider>
         </SorobanClientProvider>
       </WalletProvider>

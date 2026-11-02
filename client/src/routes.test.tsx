@@ -52,7 +52,7 @@ function renderRoutes(path: string, client: LockaContractClient = createMockClie
 }
 
 describe('AppRoutes', () => {
-  it.each(['/', '/passport', '/records', '/records/upload', '/consent', '/activity', '/this-route-does-not-exist'])(
+  it.each(['/', '/passport', '/records', '/records/upload', '/consent', '/activity', '/summary', '/this-route-does-not-exist'])(
     'renders %s without throwing',
     (path) => {
       renderRoutes(path)
@@ -76,7 +76,7 @@ describe('AppRoutes', () => {
     expect(await screen.findByText(/decentralized healthcare identity/i)).toBeInTheDocument()
   })
 
-  it.each(['/passport', '/records', '/records/upload', '/consent', '/activity'])('gates %s behind a connected wallet', async (path) => {
+  it.each(['/passport', '/records', '/records/upload', '/consent', '/activity', '/summary'])('gates %s behind a connected wallet', async (path) => {
     mockInstalledWallet()
     renderRoutes(path)
 
@@ -96,6 +96,7 @@ describe('AppRoutes', () => {
     ['/records/upload', 'Upload a record'],
     ['/consent', 'Consent Management'],
     ['/activity', 'Activity'],
+    ['/summary', 'AI Summary'],
   ])('renders %s once a wallet is connected', async (path, heading) => {
     mockConnectedWallet()
     renderRoutes(path)

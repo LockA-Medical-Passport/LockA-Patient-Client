@@ -1,7 +1,7 @@
 # LockA Patient Client
 
 Frontend for the LockA patient app: create a health passport, view records, approve/revoke
-provider access, and share QR codes. Built with Vite, React, and TypeScript, targeting **Stellar
+provider access, read AI-generated summaries, and share QR codes. Built with Vite, React, and TypeScript, targeting **Stellar
 with Soroban smart contracts** and the **Freighter** wallet for signing. The UI follows the
 visual design of a parallel EVM implementation of LockA ([locka.remixdapp.eth.limo](https://locka.remixdapp.eth.limo/))
 — only its design system carries over, not its chain. See the root [README](../README.md) and
@@ -60,8 +60,8 @@ The seed ([mockSeed.ts](src/lib/soroban/mockSeed.ts)) covers:
 - four consent grants — two active, one revoked, one expired
 - four record commitments across lab result, imaging, prescription, and immunization,
   with matching off-chain mock content and active/amended/revoked states
-- eight audit events — requests, an approval, a rejection, a revocation, a record anchor and view,
-  and the original registration
+- ten audit events — requests, an approval, a rejection, a revocation, record anchors and views,
+  a record update, a device attestation, and the original registration
 
 Behaviour worth knowing:
 
@@ -94,6 +94,22 @@ exact returned `content` string with the browser Web Crypto API and compares tha
 the on-chain commitment; it never trusts an API-provided verification flag. In mock-contract
 mode, an in-memory record-content client serves deterministic bodies whose hashes match the
 seeded commitments.
+
+## AI-generated patient summary
+
+`/summary` shows an assistive summary sourced from locka-api, never generated in the browser:
+
+- `PatientSummaryClient.getSummary(passportId)` calls
+  `GET {VITE_API_BASE_URL}/patients/:id/summary` with `cache: 'no-store'`, so the page's
+  **Refresh summary** action re-fetches rather than reusing a stale browser response.
+- The API may answer `204`, an empty `summary`, or `null` to mean there are no approved records
+  to summarise yet. Other failures surface as an error state with the same refresh action.
+- Every loading, empty, error, and success state renders the persistent
+  `AI_SUMMARY_DISCLAIMER` from `src/lib/summary/disclaimer.ts`, per LockA-Documentation's AI
+  Safety Rule: output is assistive only, not diagnosis, prescription, or medical advice.
+
+In mock-contract mode the summary provider serves a deterministic mock response, so the page is
+usable without locka-api or a wallet-backed backend.
 
 ## QR code payload format
 
