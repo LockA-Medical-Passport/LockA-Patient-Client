@@ -62,9 +62,8 @@ describe('ConsentPage — Pending tab', () => {
     expect(await screen.findByText('Lagos General Hospital')).toBeInTheDocument()
     expect(screen.getByText('MedPlus Pharmacy')).toBeInTheDocument()
 
-    const badges = screen.getAllByText(/verified/i)
-    expect(badges.some((el) => el.textContent === 'Verified')).toBe(true)
-    expect(badges.some((el) => el.textContent === 'Unverified')).toBe(true)
+    expect(screen.getByText('Verified')).toBeInTheDocument()
+    expect(screen.getByText('Pending', { selector: '.badge' })).toBeInTheDocument()
 
     expect(screen.getByText(/lab results, imaging, treatment notes/i)).toBeInTheDocument()
     expect(screen.getAllByText(/7 days/i).length).toBeGreaterThan(0)

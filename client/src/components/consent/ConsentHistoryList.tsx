@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ProviderBadge } from '../providers'
 import { Badge, Button, Card } from '../ui'
 import { formatDateTime, formatScopes } from './format'
 import type { ConsentHistoryEntry, ConsentHistoryStatus } from './history'
@@ -72,7 +73,10 @@ export function ConsentHistoryList({ entries }: { entries: ConsentHistoryEntry[]
             <Card key={entry.id} className="p-5">
               <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
                 <div>
-                  <h2 className="font-semibold text-white text-sm">{entry.provider.name}</h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-semibold text-white text-sm">{entry.provider.name}</h2>
+                    <ProviderBadge provider={entry.provider} />
+                  </div>
                   <p className="text-xs text-slate-500 mt-1">{formatDateTime(entry.occurredAt)}</p>
                 </div>
                 <Badge color={STATUS_COLORS[entry.status]}>{entry.status}</Badge>

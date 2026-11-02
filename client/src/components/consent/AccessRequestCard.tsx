@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { AccessRequest, RecordCategory } from '../../lib/soroban'
-import { Badge, Button, Card } from '../ui'
+import { ProviderBadge } from '../providers'
+import { Button, Card } from '../ui'
 import { formatDuration, formatRecordCategory, formatScopes } from './format'
 
 export interface AccessRequestCardProps {
@@ -48,11 +49,9 @@ export function AccessRequestCard({ request, onApprove, onReject }: AccessReques
     <Card className="p-5">
       <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-semibold text-white text-sm">{request.provider.name}</span>
-            <Badge color={request.provider.verified ? 'green' : 'gray'}>
-              {request.provider.verified ? 'Verified' : 'Unverified'}
-            </Badge>
+            <ProviderBadge provider={request.provider} showKind />
           </div>
           <p className="text-xs text-slate-500">{request.reason}</p>
         </div>

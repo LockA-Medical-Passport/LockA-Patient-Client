@@ -139,7 +139,7 @@ describe('createRealClient — decoding', () => {
     expect(grant).toEqual({
       id: 'grant-1',
       requestId: 'req-1',
-      provider: { address: MOCK_PROVIDERS.lab.address, name: MOCK_PROVIDERS.lab.address, kind: 'other', verified: false },
+      provider: { address: MOCK_PROVIDERS.lab.address, name: MOCK_PROVIDERS.lab.address, kind: 'other', status: 'pending', verified: false },
       scopes: ['lab-result'],
       grantedAt: '2026-07-22T12:02:00.000Z',
       expiresAt: null,
