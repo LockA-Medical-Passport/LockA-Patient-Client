@@ -43,6 +43,7 @@ describe('Navbar', () => {
     expect(screen.getByRole('link', { name: 'Records' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Consent' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Activity' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Summary' })).toBeInTheDocument()
   })
 
   it('marks the active route link and not the others', () => {

@@ -59,3 +59,17 @@ export function ActivityIcon({ className }: NavIconProps) {
     </svg>
   )
 }
+
+export function SummaryIcon({ className }: NavIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"
+      />
+      <path strokeLinecap="round" strokeWidth={2} d="M5 16h14M7 20h10" />
+    </svg>
+  )
+}

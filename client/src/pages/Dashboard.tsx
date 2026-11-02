@@ -100,7 +100,7 @@ function DashboardSummary({ passport, recordCount, pendingConsentCount }: Dashbo
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link to="/records" className="glass rounded-xl p-5 text-left hover:border-blue-500/40 transition-all">
           <div className="font-semibold text-white text-sm mb-1">Medical Records</div>
           <div className="text-xs text-slate-500">View and verify your records</div>
@@ -108,6 +108,10 @@ function DashboardSummary({ passport, recordCount, pendingConsentCount }: Dashbo
         <Link to="/consent" className="glass rounded-xl p-5 text-left hover:border-blue-500/40 transition-all">
           <div className="font-semibold text-white text-sm mb-1">Consent Management</div>
           <div className="text-xs text-slate-500">Review provider access requests</div>
+        </Link>
+        <Link to="/summary" className="glass rounded-xl p-5 text-left hover:border-blue-500/40 transition-all">
+          <div className="font-semibold text-white text-sm mb-1">AI Summary</div>
+          <div className="text-xs text-slate-500">Assistive overview of approved records</div>
         </Link>
       </div>
     </>
